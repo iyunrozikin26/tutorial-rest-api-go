@@ -291,5 +291,74 @@ from `https://gorm.io/docs/connecting_to_the_database.html#MySQL`
             })
         }
         ```
-9. Setup 
+    - setup dto untuk create
+        ```go
+        package user
+
+        // untuk membuat cetakan object input user
+        type CreateUserInput struct {
+            Name  string `json:"name" valiidate:"required"`
+            Email string `json:"email" valiidate:"email"`
+        }
+        ```
+    - setup dto untuk update
+        ```go
+        package user
+
+        // untuk membuat cetakan object input update user
+        type UpdateUserInput struct {
+            Name  string `json:"name" valiidate:"required"`
+            Email string `json:"email" valiidate:"email"`
+        }
+        ```
+9. Setup routes (file api.go)
+    ```go
+    package route
+
+    import (
+        "github.com/gin-gonic/gin"
+        user "github.com/iyunrozikin26/tutorial-rest-api-go.git/src/models/user"
+        "gorm.io/gorm"
+    )
+
+    var (
+        ctx *gin.Context
+    )
+
+    func Api(router *gin.Engine, db *gorm.DB) {
+        userRepository := user.NewUserRepository(db)
+        userService := user.NewUserService(userRepository)
+        userController := user.NewUserController(userService, ctx)
+
+        v1 := router.Group("/api/v1")
+        {
+            v1.GET("/users", userController.Index)
+            v1.GET("/users/:id", userController.GetById)
+            v1.POST("/users", userController.Create)
+            v1.PATCH("/users/:id", userController.Update)
+            v1.DELETE("/users/:id", userController.Delete)
+        }
+    }
+
+    
+    ```
+10. Setup main.go
+    ```go
+    package main
+
+    import (
+        "github.com/gin-gonic/gin"
+        "github.com/iyunrozikin26/tutorial-rest-api-go.git/src/config"
+        route "github.com/iyunrozikin26/tutorial-rest-api-go.git/src/routes"
+    )
+
+    func main() {
+        router := gin.Default()
+        db := config.DB()
+
+        route.Api(router, db)
+
+        router.Run()
+    }
+    ```
 
